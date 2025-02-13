@@ -12,7 +12,6 @@ typedef struct chr_struct
 	int y;		// y coordinates
 	int x;		// x coordinates
 	int gold;	// gold
-	char body;	// body ASCII character
 	char *name; // name (TODO: implement~ name, save, load)
 } CHARACTER;
 
@@ -40,6 +39,9 @@ bool in_bounds(CHARACTER *mc);
 void reload_stats(WINDOW *loacal_win, CHARACTER *ch);
 int check_map(CHARACTER *ch);
 void reload_tiles(WINDOW *local_win);
+void render_character(CHARACTER *chr);
+void clear_character(CHARACTER *chr);
+
 
 int main(int argc, char *argv[])
 {
@@ -67,7 +69,7 @@ int main(int argc, char *argv[])
 	main_win = create_newwin(LINES, COLS, 0, 0);
 
 	// ADD some random objects
-	obj_index[0] = create_object(52, 5, 20, 20);
+	obj_index[0] = create_object(52, 5, 15, 20);
 	obj_index[1] = create_object(42, 60, 10, 50);
 
 	//Create main character
@@ -201,16 +203,16 @@ void reload_stats(WINDOW *local_win, CHARACTER *ch)
 	mvwprintw(local_win, (y - y) + 8, 1, "GOLD = %d   ", ch->gold);
 
 	//Commands
-	mvwprintw(local_win, (y - y) + 1, 20, "E = INTERACT", ch->hp);
+	mvwprintw(local_win, (y - y) + 1, 20, "E = INTERACT");
 	//////////////////
 	//DEBUG SPACE
 	//////////////////
 	//mvwprintw(local_win, (y-y) + 2, 20, "Tile[%d][%d]: %d", ch->y, ch->x, map[ch->y][ch->x]);
 
-	mvwprintw(local_win, (y - y) + 8, 20, "F1 = Exit Game", ch->gold);
+	mvwprintw(local_win, (y - y) + 8, 20, "F1 = Exit Game");
 
 	//Interact status
-	mvwprintw(local_win, (y - y) + 3, 50, e_stat);
+	mvwprintw(local_win, (y - y) + 3, 50, "%s", e_stat);
 	wrefresh(local_win);
 }
 
@@ -236,9 +238,7 @@ WINDOW *create_command_window(WINDOW *main_win, CHARACTER *ch)
 CHARACTER *new_character(WINDOW *win)
 {
 	CHARACTER *chr = (CHARACTER *)malloc(sizeof(CHARACTER)); //allocate memory
-
 	//initialize stats
-	chr->body = '@';
 	chr->gold = 0;
 	chr->hp = 100;
 	chr->str = 1;
@@ -247,8 +247,7 @@ CHARACTER *new_character(WINDOW *win)
 	chr->x = COLS / 2;
 	chr->y = LINES / 2;
 	chr->win = win;
-	mvwaddch(chr->win, chr->y, chr->x, chr->body);
-	wrefresh(chr->win);
+	render_character(chr);
 	return chr;
 }
 
@@ -277,12 +276,10 @@ bool in_bounds(CHARACTER *mc)
 
 void move_character(CHARACTER *chr, int y, int x)
 {
-	mvwaddch(chr->win, chr->y, chr->x, ' ');
-	wrefresh(chr->win);
+	clear_character(chr);
 	chr->x = x;
 	chr->y = y;
-	mvwaddch(chr->win, y, x, chr->body);
-	wrefresh(chr->win);
+	render_character(chr);
 }
 
 int check_map(CHARACTER *ch)
@@ -299,4 +296,39 @@ void reload_tiles(WINDOW *local_win)
 			mvwaddch(local_win, obj_index[i].y, obj_index[i].x, 'M');
 		else if (obj_index[i].type == 42)
 			mvwaddch(local_win, obj_index[i].y, obj_index[i].x, '$');
+}
+
+void render_character(CHARACTER *chr) 
+{
+	mvwaddch(chr->win, chr->y-1, chr->x-1, ' ');
+	mvwaddch(chr->win, chr->y-1, chr->x, '#');
+	mvwaddch(chr->win, chr->y-1, chr->x+1, ' ');
+	mvwaddch(chr->win, chr->y, chr->x-1, '=');
+	mvwaddch(chr->win, chr->y, chr->x, '@');
+	mvwaddch(chr->win, chr->y, chr->x+1, '=');
+	mvwaddch(chr->win, chr->y+1, chr->x-1, ' ');
+	mvwaddch(chr->win, chr->y+1, chr->x, '|');
+	mvwaddch(chr->win, chr->y+1, chr->x+1, ' ');
+	mvwaddch(chr->win, chr->y+2, chr->x-1, '/');
+	mvwaddch(chr->win, chr->y+2, chr->x, ' ');
+	mvwaddch(chr->win, chr->y+2, chr->x+1, '\\');
+	wrefresh(chr->win);
+}
+
+
+void clear_character(CHARACTER *chr) 
+{
+	mvwaddch(chr->win, chr->y-1, chr->x-1, ' ');
+	mvwaddch(chr->win, chr->y-1, chr->x, ' ');
+	mvwaddch(chr->win, chr->y-1, chr->x+1, ' ');
+	mvwaddch(chr->win, chr->y, chr->x-1, ' ');
+	mvwaddch(chr->win, chr->y, chr->x, ' ');
+	mvwaddch(chr->win, chr->y, chr->x+1, ' ');
+	mvwaddch(chr->win, chr->y+1, chr->x-1, ' ');
+	mvwaddch(chr->win, chr->y+1, chr->x, ' ');
+	mvwaddch(chr->win, chr->y+1, chr->x+1, ' ');
+	mvwaddch(chr->win, chr->y+2, chr->x-1, ' ');
+	mvwaddch(chr->win, chr->y+2, chr->x, ' ');
+	mvwaddch(chr->win, chr->y+2, chr->x+1, ' ');
+	wrefresh(chr->win);
 }
